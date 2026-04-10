@@ -1,8 +1,18 @@
 import pandas as pd
 import re
 
+def normalize_vmware_mac(mac):
+    if isinstance(mac, str) and mac.startswith("VMware_"):
+        suffix = mac.split("_")[1]
+        return "00:0C:29:" + suffix.upper()
+    return mac
+
 def analyze_attack(file_path):
     df = pd.read_csv(file_path)
+
+    # Chuẩn hóa MAC trước
+    df['Source'] = df['Source'].apply(normalize_vmware_mac)
+    df['Destination'] = df['Destination'].apply(normalize_vmware_mac)
 
     # =========================================================
     # 1. LỌC ARP + MALICIOUS
@@ -29,56 +39,4 @@ def analyze_attack(file_path):
     df_reply = df_attack[df_attack['Info'].str.contains('is at', na=False)]
 
     print("\n=== TOP ATTACKER (ARP REPLY SPAM) ===")
-    print(df_reply['Source'].value_counts().head(5))
-
-    # =========================================================
-    # 4. TRÍCH IP
-    # =========================================================
-    def extract_ip(text):
-        match = re.search(r'(\d+\.\d+\.\d+\.\d+)', str(text))
-        return match.group(1) if match else None
-
-    df_attack = df_attack.copy()
-    df_attack.loc[:, 'IP'] = df_attack['Info'].apply(extract_ip)
-
-    # =========================================================
-    # 5. ATTACKER CHÍNH
-    # =========================================================
-    main_attacker = attacker_counts.idxmax()
-    print(f"\n🎯 MAIN ATTACKER: {main_attacker}")
-
-    print("\n=== TOP 5 ATTACKER IP ===")
-    attacker_ip_counts = (
-        df_attack[df_attack['Source'] == main_attacker]['IP']
-        .value_counts()
-        .head(5)
-    )
-
-    for ip, count in attacker_ip_counts.items():
-        print(f"{ip:<20} {count}")
-
-    # =========================================================
-    # 6. VICTIM CHÍNH
-    # =========================================================
-    main_victim = victim_counts.idxmax()
-    print(f"\n👤 MAIN VICTIM: {main_victim}")
-
-    print("\n=== TOP 5 VICTIM IP ===")
-    victim_ip_counts = (
-        df_attack[df_attack['Destination'] == main_victim]['IP']
-        .value_counts()
-        .head(5)
-    )
-
-    for ip, count in victim_ip_counts.items():
-        print(f"{ip:<20} {count}")
-
-    # =========================================================
-    # 7. CHECK MITM
-    # =========================================================
-    attacker_ips = df_attack[df_attack['Source'] == main_attacker]['IP'].nunique()
-
-    if attacker_ips > 1:
-        print("\n⚠️ WARNING: Possible MITM attack (1 MAC → multiple IPs)")
-    else:
-        print("\n✅ No strong MITM pattern detected")
+    print(df_reply['Source'].value_counts().head(1))
