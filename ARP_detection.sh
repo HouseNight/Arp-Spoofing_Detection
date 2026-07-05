@@ -2,9 +2,15 @@
 
 set -u
 
-BACKUP_DIR="/home/nohax/backup"
-PY_DIR="/home/nohax/AI-Detection/Arp-Spoofing_Detection"
-PY_SCRIPT="/home/nohax/AI-Detection/Arp-Spoofing_Detection/XGBoost_MITM_ARP.py"
+RUN_USER="${SUDO_USER:-$(id -un)}"
+HOME_DIR="$(getent passwd "$RUN_USER" | cut -d: -f6)"
+
+BACKUP_DIR="$HOME_DIR/backup"
+PY_DIR="$HOME_DIR/AI-Detection/Arp-Spoofing_Detection"
+PY_SCRIPT="$PY_DIR/XGBoost_MITM_ARP.py"
+OUTPUT_DIR="$HOME_DIR/Solution_ARP"
+
+mkdir -p "$OUTPUT_DIR"
 
 if [ $# -ne 1 ]; then
     echo "Cách dùng: $0 <ten_file_pcap>"
@@ -33,9 +39,12 @@ fi
 BASE_NAME="$(basename "$PCAP_NAME")"
 SAFE_NAME="${BASE_NAME//./_}"
 CSV_NAME="${SAFE_NAME}.csv"
-CSV_PATH="/home/nohax/Solution_ARP/$CSV_NAME"
-RESULT_TXT="/home/nohax/Solution_ARP/${SAFE_NAME}_result.txt"
+CSV_PATH="$OUTPUT_DIR/$CSV_NAME"
+RESULT_TXT="$OUTPUT_DIR/${SAFE_NAME}_result.txt"
 
+echo "====================================="
+echo "User  : $RUN_USER"
+echo "Home  : $HOME_DIR"
 echo "====================================="
 echo "1. Parse PCAP -> CSV"
 echo "Input : $PCAP_PATH"
@@ -74,6 +83,7 @@ NR>1 {
 }' "$TMP_CSV" > "$CSV_PATH"
 
 rm -f "$TMP_CSV"
+
 if [ ! -f "$CSV_PATH" ]; then
     echo "Lỗi: Không tạo được file CSV"
     exit 1
