@@ -477,14 +477,3 @@ GitHub: `https://github.com/HouseNight`
 
 ---
 
-## 19. References
-
-- XGBoost Documentation: `https://xgboost.readthedocs.io/`
-- ARP Protocol RFC 826: `https://www.rfc-editor.org/rfc/rfc826`
-- Dataset reference: `https://github.com/Aishwarya-Narayanan03/Detection-of-MITM-Attacks-using-RL`
-
----
-
-## 20. License
-
-No license has been specified yet. Add a `LICENSE` file before publishing the project as open source.
